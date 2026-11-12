@@ -1,0 +1,7 @@
+build/
+package/
+*.ipa
+*.xcodeproj/
+*.xcworkspace/
+.DS_Store
+RoomGuard/Info.plist

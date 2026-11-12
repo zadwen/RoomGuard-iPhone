@@ -1,0 +1,45 @@
+name: RoomGuard
+options:
+  bundleIdPrefix: app.roomguard
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    CODE_SIGNING_ALLOWED: NO
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  RoomGuard:
+    type: application
+    platform: iOS
+    sources: [RoomGuard]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.roomguard.viewer
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+    info:
+      path: RoomGuard/Info.plist
+      properties:
+        CFBundleDisplayName: RoomGuard
+        UILaunchScreen: {}
+        NSCameraUsageDescription: Scan the pairing QR code displayed by RoomGuard on your PC.
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+  RoomGuardTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [RoomGuardTests]
+    dependencies:
+      - target: RoomGuard
+schemes:
+  RoomGuard:
+    build:
+      targets:
+        RoomGuard: all
+        RoomGuardTests: [test]
+    test:
+      targets: [RoomGuardTests]

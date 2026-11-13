@@ -35,7 +35,7 @@ Install Xcode and XcodeGen (`brew install xcodegen`). Run `xcodegen generate`, o
 - Both PC and phone make outbound secure WebSocket connections to a permanent Cloudflare Worker. No inbound PC listener, VPN, or router port forwarding is needed.
 - `GET /health` exposes only service name/protocol. `/v1/status` and `/v1/live` require `Authorization: Bearer <hex HMAC-SHA256(key, "RoomGuard API v1")>`.
 - `/v1/live?fps=30` is a WebSocket. Binary messages are `12-byte nonce || AES-GCM ciphertext || 16-byte tag`. Plaintext is `8-byte big-endian Unix milliseconds || JPEG`. Authenticated data is `RoomGuard frame v1` in UTF-8. Status messages contain no image data.
-- After each decrypted frame the phone sends `ack`. The relay allows one outstanding frame per viewer and drops excess frames for slow connections. The PC sends video only while a viewer is connected.
+- After each decrypted frame the phone sends `ack`. The relay allows at most four outstanding frames per viewer and drops excess frames for slow connections. The PC sends video only while a viewer is connected.
 - The publisher uses a separate token derived with context `RoomGuard publisher v1`. The relay retains SHA-256 hashes of the tokens and never has the encryption key. Its Durable Object stores only authentication hashes and the key generation; no footage is written to cloud storage.
 - Pairing format: JSON with `v:1`, HTTPS `url`, and a 32-byte URL-safe Base64 `key`. Never commit real pairing data.
 

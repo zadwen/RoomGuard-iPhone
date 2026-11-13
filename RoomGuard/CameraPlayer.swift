@@ -112,6 +112,8 @@ final class CameraPlayer: ObservableObject {
                             self.lastTimestamp = frame.timestamp
                             self.lastFrame = now
                             self.image = picture
+                            try await task.send(.string("ack"))
+                            guard !Task.isCancelled else { break }
                             self.isLive = true
                             self.status = "Live from your PC"
                             self.frameCount += 1
@@ -120,9 +122,11 @@ final class CameraPlayer: ObservableObject {
                                 self.receivedFPS = min(30, Int((Double(self.frameCount) / elapsed).rounded()))
                                 self.frameCount = 0; self.counterStart = now
                             }
-                        case .string:
+                        case .string(let text):
                             self.image = nil; self.isLive = false; self.receivedFPS = 0
-                            self.status = "Camera is not recording. Check RoomGuard on your PC."
+                            if let data = text.data(using: .utf8), let notice = try? JSONDecoder().decode(CameraNotice.self, from: data) {
+                                self.status = String(notice.status.prefix(120))
+                            } else { self.status = "Waiting for camera…" }
                         @unknown default: break
                         }
                     }
@@ -134,7 +138,7 @@ final class CameraPlayer: ObservableObject {
                         } else if let response = task.response as? HTTPURLResponse, response.statusCode == 401 {
                             self.status = "Pairing was reset. Scan the new code on your PC."
                         } else {
-                            self.status = "PC unavailable. Retrying… If its address changed, pair again."
+                            self.status = "Connection unavailable. Reconnecting automatically…"
                         }
                     }
                 }
@@ -155,3 +159,5 @@ final class CameraPlayer: ObservableObject {
         }
     }
 }
+
+private struct CameraNotice: Decodable { let status: String }

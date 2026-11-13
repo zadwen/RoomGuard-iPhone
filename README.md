@@ -18,7 +18,8 @@ The IPA is unsigned for AltStore Classic or SideStore to sign with your Apple ID
 
 ## Limits
 
-- The free quick tunnel uses a temporary hostname. After a PC/relay restart it can change. Pair again with the new QR before leaving home. This is a first version, not a permanent-address monitoring service. Quick tunnels have no uptime guarantee.
+- Pair once: the relay has a fixed `workers.dev` address and both apps retain the same key across PC restarts. Re-pair only after deliberately resetting pairing, deleting app data, or changing the relay address. Enable **Record when I sign in to Windows** on the PC to resume recording and phone connectivity after signing in.
+- Cloudflare's free plan has usage limits. If its daily quota is exhausted, viewing can fail until the quota resets. Local recording continues independently. No paid plan is required or enabled by this setup.
 - PC must be on, connected to the Internet, and recording. Actual sleep/shutdown stops the webcam. Locking Windows or turning the screen off can keep recording.
 - Live preview is 640 pixels wide, up to 30 fps; network speed can lower the delivered frame rate. The original PC recordings remain at the chosen profile, normally 1080p/30 fps.
 - No audio, remote archive, deletion controls, recording controls, or background phone recording. Pausing the viewer does not stop the PC recorder. Two phone viewers can connect simultaneously.
@@ -31,9 +32,11 @@ Install Xcode and XcodeGen (`brew install xcodegen`). Run `xcodegen generate`, o
 
 ## Protocol
 
-- Only the PC's loopback interface listens. Cloudflared creates an outbound HTTP/2 tunnel; no router port forwarding.
+- Both PC and phone make outbound secure WebSocket connections to a permanent Cloudflare Worker. No inbound PC listener, VPN, or router port forwarding is needed.
 - `GET /health` exposes only service name/protocol. `/v1/status` and `/v1/live` require `Authorization: Bearer <hex HMAC-SHA256(key, "RoomGuard API v1")>`.
 - `/v1/live?fps=30` is a WebSocket. Binary messages are `12-byte nonce || AES-GCM ciphertext || 16-byte tag`. Plaintext is `8-byte big-endian Unix milliseconds || JPEG`. Authenticated data is `RoomGuard frame v1` in UTF-8. Status messages contain no image data.
+- After each decrypted frame the phone sends `ack`. The relay allows one outstanding frame per viewer and drops excess frames for slow connections. The PC sends video only while a viewer is connected.
+- The publisher uses a separate token derived with context `RoomGuard publisher v1`. The relay retains SHA-256 hashes of the tokens and never has the encryption key. Its Durable Object stores only authentication hashes and the key generation; no footage is written to cloud storage.
 - Pairing format: JSON with `v:1`, HTTPS `url`, and a 32-byte URL-safe Base64 `key`. Never commit real pairing data.
 
-References: [AltStore Classic](https://faq.altstore.io/altstore-classic/your-altstore), [Cloudflare quick tunnels](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/), [GitHub macOS runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+References: [AltStore Classic](https://faq.altstore.io/altstore-classic/your-altstore), [Cloudflare relay usage limits](https://developers.cloudflare.com/durable-objects/platform/pricing/), [GitHub macOS runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).

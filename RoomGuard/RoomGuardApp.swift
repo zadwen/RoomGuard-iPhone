@@ -109,7 +109,7 @@ struct CameraView: View {
                 Spacer()
                 Button("Forget camera", role: .destructive) { forgetConfirmation = true }
             }.font(.callout).tint(mint)
-            Text("If the PC restarts or the relay address changes, scan its new pairing code before leaving home.")
+            Text("Pairing stays saved across PC restarts. Your camera reconnects when RoomGuard starts again. Only scan a new code if you reset pairing.")
                 .font(.footnote).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
     }
